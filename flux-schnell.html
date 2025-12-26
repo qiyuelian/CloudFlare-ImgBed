@@ -1,0 +1,343 @@
+
+  <!DOCTYPE html>
+  <html lang="zh" class="dark-theme">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Flux.1-schnell 图像生成器</title>
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+      <style>
+          :root {
+              --background-color: #f0f4f8;
+              --card-background: #ffffff;
+              --text-color: #2d3748;
+              --primary-color: #4299e1;
+              --primary-hover: #3182ce;
+              --error-color: #e53e3e;
+              --success-color: #48bb78;
+          }
+          .dark-theme {
+              --background-color: #1a202c;
+              --card-background: #2d3748;
+              --text-color: #e2e8f0;
+              --primary-color: #63b3ed;
+              --primary-hover: #4299e1;
+              --error-color: #fc8181;
+              --success-color: #68d391;
+          }
+          body {
+              font-family: 'Roboto', sans-serif;
+              line-height: 1.6;
+              color: var(--text-color);
+              background-color: var(--background-color);
+              margin: 0;
+              padding: 0;
+              min-height: 100vh;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              transition: all 0.3s ease;
+          }
+          .container {
+              width: 100%;
+              max-width: 800px;
+              margin: 2rem auto;
+              padding: 2rem;
+              background-color: var(--card-background);
+              border-radius: 15px;
+              box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+              transition: all 0.3s ease;
+          }
+          h1 {
+              color: var(--primary-color);
+              text-align: center;
+              margin-bottom: 1.5rem;
+              font-size: 2.5rem;
+              transition: color 0.3s ease;
+          }
+          .image-container {
+              margin-bottom: 2rem;
+              text-align: center;
+              background-color: var(--background-color);
+              padding: 2rem;
+              border-radius: 10px;
+              min-height: 300px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.3s ease;
+          }
+          .image-container img {
+              max-width: 100%;
+              border-radius: 10px;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          }
+          .form-group {
+              margin-bottom: 1.5rem;
+          }
+          label {
+              display: block;
+              margin-bottom: 0.5rem;
+              font-weight: bold;
+              transition: color 0.3s ease;
+          }
+          input[type="text"] {
+              width: 100%;
+              padding: 0.8rem;
+              border: 2px solid var(--primary-color);
+              border-radius: 8px;
+              font-size: 1rem;
+              transition: all 0.3s ease;
+              background-color: var(--card-background);
+              color: var(--text-color);
+          }
+          input[type="text"]:focus {
+              outline: none;
+              box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+          }
+          .image-ratio-group {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+              gap: 1rem;
+              margin-top: 0.5rem;
+          }
+          .image-ratio-option input[type="radio"] {
+              display: none;
+          }
+          .image-ratio-option label {
+              display: block;
+              padding: 0.5rem;
+              text-align: center;
+              background-color: var(--background-color);
+              border: 2px solid var(--primary-color);
+              border-radius: 8px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+          }
+          .image-ratio-option input[type="radio"]:checked + label {
+              background-color: var(--primary-color);
+              color: white;
+          }
+          .generate-btn {
+              display: block;
+              width: 100%;
+              padding: 1rem;
+              background-color: var(--primary-color);
+              color: white;
+              border: none;
+              border-radius: 8px;
+              font-size: 1.1rem;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+          }
+          .generate-btn:hover {
+              background-color: var(--primary-hover);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          }
+          .generate-btn:disabled {
+              background-color: #a0aec0;
+              cursor: not-allowed;
+              transform: none;
+              box-shadow: none;
+          }
+          .logout-btn {
+              display: inline-block;
+              margin-top: 2rem;
+              padding: 0.8rem 1.5rem;
+              background-color: var(--error-color);
+              color: white;
+              text-decoration: none;
+              border-radius: 8px;
+              transition: all 0.3s ease;
+          }
+          .logout-btn:hover {
+              background-color: #c53030;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          }
+          #error-message {
+              color: var(--error-color);
+              text-align: center;
+              margin-top: 1rem;
+              font-weight: bold;
+              transition: color 0.3s ease;
+          }
+          .loading {
+              font-style: italic;
+              color: var(--primary-color);
+              transition: color 0.3s ease;
+          }
+          #theme-toggle {
+              position: absolute;
+              top: 1rem;
+              right: 1rem;
+              background-color: var(--primary-color);
+              color: white;
+              border: none;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 20px;
+          }
+          #theme-toggle:hover {
+              background-color: var(--primary-hover);
+              transform: scale(1.1);
+          }
+      </style>
+  </head>
+  <body>
+      <button id="theme-toggle">🌞</button>
+      <div class="container">
+          <h1>Flux.1-schnell 图像生成器</h1>
+          
+          <div class="image-container" id="image-container">
+              <p>您生成的图像将显示在这里</p>
+          </div>
+          
+          <form id="image-form">
+              <div class="form-group">
+                  <label for="prompt">描述您的图像：</label>
+                  <input type="text" id="prompt" name="prompt" placeholder="输入您的图像描述" required>
+              </div>
+              
+              <div class="form-group">
+                  <label>选择图像比例：</label>
+                  <div class="image-ratio-group">
+                      <div class="image-ratio-option">
+                          <input type="radio" id="ratio-1-1" name="image_ratio" value="1:1" checked>
+                          <label for="ratio-1-1">1:1</label>
+                      </div>
+                      <div class="image-ratio-option">
+                          <input type="radio" id="ratio-1-2" name="image_ratio" value="1:2">
+                          <label for="ratio-1-2">1:2</label>
+                      </div>
+                      <div class="image-ratio-option">
+                          <input type="radio" id="ratio-3-2" name="image_ratio" value="3:2">
+                          <label for="ratio-3-2">3:2</label>
+                      </div>
+                      <div class="image-ratio-option">
+                          <input type="radio" id="ratio-3-4" name="image_ratio" value="3:4">
+                          <label for="ratio-3-4">3:4</label>
+                      </div>
+                      <div class="image-ratio-option">
+                          <input type="radio" id="ratio-16-9" name="image_ratio" value="16:9">
+                          <label for="ratio-16-9">16:9</label>
+                      </div>
+                      <div class="image-ratio-option">
+                          <input type="radio" id="ratio-9-16" name="image_ratio" value="9:16">
+                          <label for="ratio-9-16">9:16</label>
+                      </div>
+                  </div>
+              </div>
+              
+              <button type="submit" class="generate-btn">生成图像</button>
+          </form>
+          
+          <div id="error-message"></div>
+          <a href="/logout" class="logout-btn">登出</a>
+      </div>
+  
+      <script>
+      document.getElementById('image-form').addEventListener('submit', async function(event) {
+          event.preventDefault();
+  
+          const prompt = document.getElementById('prompt').value;
+          const imageRatio = document.querySelector('input[name="image_ratio"]:checked').value;
+          const imageContainer = document.getElementById('image-container');
+          const errorMessage = document.getElementById('error-message');
+          const generateButton = document.querySelector('.generate-btn');
+  
+          const numInferenceSteps = 20;
+  
+          updateUI('generating');
+  
+          const { width, height } = getImageDimensions(imageRatio);
+  
+          try {
+              const response = await fetch('/generate-image', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      prompt,
+                      width,
+                      height,
+                      num_inference_steps: numInferenceSteps
+                  })
+              });
+  
+              if (!response.ok) {
+                  throw new Error('生成图像失败。请重试。');
+              }
+  
+              const data = await response.json();
+  
+              if (data.images && data.images.length > 0) {
+                  const imageUrl = data.images[0].url;
+                  imageContainer.innerHTML = '<img src="' + imageUrl + '" alt="生成的图像">';
+              } else {
+                  throw new Error('生成图像失败。请重试。');
+              }
+          } catch (error) {
+              console.error('错误:', error);
+              errorMessage.textContent = error.message;
+              imageContainer.innerHTML = '<p>生成图像失败</p>';
+          } finally {
+              updateUI('ready');
+          }
+      });
+  
+      function getImageDimensions(ratio) {
+          const dimensions = {
+              '1:1': { width: 1024, height: 1024 },
+              '1:2': { width: 512, height: 1024 },
+              '3:2': { width: 768, height: 512 },
+              '3:4': { width: 768, height: 1024 },
+              '16:9': { width: 1024, height: 576 },
+              '9:16': { width: 576, height: 1024 }
+          };
+          return dimensions[ratio] || dimensions['1:1'];
+      }
+  
+      function updateUI(state) {
+          const imageContainer = document.getElementById('image-container');
+          const errorMessage = document.getElementById('error-message');
+          const generateButton = document.querySelector('.generate-btn');
+  
+          if (state === 'generating') {
+              imageContainer.innerHTML = '<p class="loading">正在生成您的图像... 这可能需要一点时间。</p>';
+              errorMessage.textContent = '';
+              generateButton.disabled = true;
+              generateButton.textContent = '生成中...';
+          } else {
+              generateButton.disabled = false;
+              generateButton.textContent = '生成图像';
+          }
+      }
+  
+      const themeToggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+  
+      function updateTheme() {
+          const isDarkTheme = html.classList.contains('dark-theme');
+          themeToggle.textContent = isDarkTheme ? '🌞' : '🌓';
+      }
+  
+      updateTheme();
+  
+      themeToggle.addEventListener('click', () => {
+          html.classList.toggle('dark-theme');
+          updateTheme();
+      });
+      </script>
+  </body>
+  </html>
